@@ -1,0 +1,151 @@
+<html>
+ <head>
+ 	<meta charset="utf-8">
+ 	<title>edit, add, insert, delete using angyularjs</title>
+ 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootswatch/3.2.0/sandstone/bootstrap.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+
+  <script src="dirPagination.js"></script>
+ </head>
+ 
+<body>
+	<div class="controller">
+<div ng-app="myApp">
+<div ng-controller="cntrl">
+
+<form>
+<div class="col-sm-4">
+<input type="text" placeholder="Student ID" ng-model="id" class="form-control" name="id" ng-disabled="obj.disable" required>
+</div>
+<div class="col-sm-4">
+<input type="text" placeholder="Student Name" class="form-control" ng-model="name" name="id" required>
+</div>
+<div class="col-sm-4">
+<button class="btn btn-primary" ng-click="insertdata()" >{{btnName}}</button>
+</div>
+{{msg}}
+
+</form>
+<div class="col-sm-6">
+<input type="text" auto-complete class="form-control" ng-model="searchfor" placeholder="search for">
+</div>
+
+<div class="clearfix"></div>
+
+<div class="row">
+    <div class="col-xs-4">
+      <h3>Meals Page: {{ currentPage }}</h3>
+    </div>
+    <div class="col-xs-4">
+      <label for="search">items per page:</label>
+      <!-- <input type="number" min="1" max="100" class="form-control" ng-model="pageSize"> -->
+
+      <select ng-model="pageSize" class="form-control">
+      	<option value="5" >5</option>
+      	<option value="10" selected>10</option>
+      </select>
+
+    </div>
+</div>
+
+
+<table class="table table-hover">
+	<thead>
+      <tr>
+        <td>
+          <a href="" ng-click="sortType = 'studid'; sortReverse = !sortReverse">
+            id
+            <span ng-show="sortType == 'studid' && !sortReverse" class="fa fa-caret-down"></span>
+            <span ng-show="sortType == 'studid' && sortReverse" class="fa fa-caret-up"></span>
+          </a>
+        </td>
+        <td>
+          <a href="" ng-click="sortType = 'studname'; sortReverse = !sortReverse">
+          name 
+            <span ng-show="sortType == 'studname' && !sortReverse" class="fa fa-caret-down"></span>
+            <span ng-show="sortType == 'studname' && sortReverse" class="fa fa-caret-up"></span>
+          </a>
+        </td>
+      </tr>
+
+    </thead>
+
+	<tbody>
+		<tr dir-paginate="student in data | orderBy:sortType:sortReverse | filter:searchfor | itemsPerPage:pageSize">
+			<td>{{student.studid}}</td>
+			<td>{{student.studname}}</td>
+			<td><button ng-click="deleteStud(student.studid);">Delete</button></td>
+			<td><button ng-click="editStud(student.studid, student.studname);">Edit</button></td>
+		</tr>
+	</tbody>
+</table>
+<!-- max-size="5" -->
+	<dir-pagination-controls
+		direction-links="true"
+		boundary-links="true">
+	</dir-pagination-controls>
+
+</div>
+</div>
+</div>
+
+<script>
+var app=angular.module('myApp',['angularUtils.directives.dirPagination']);
+app.controller('cntrl',function($scope,$http){
+	$scope.obj={'disable':false};
+	$scope.btnName="Insert";
+
+	$scope.pageSize = 10;
+	$http.get("select.php")
+		.success(function(data){
+			$scope.data=data;
+		}).error(function(){
+			$scope.data = "not found data from  database";
+	});
+
+	$scope.insertdata=function(){
+		$http.post("insert.php",{'id':$scope.id, 'name':$scope.name, 'btnName':$scope.btnName})
+		.success(function(){
+			$scope.msg="Data Inserted";
+			$scope.displayStud();
+		})
+
+	}
+
+	$scope.displayStud=function(){
+		$http.get("select.php")
+		.success(function(data){
+			$scope.data=data;
+		}).error(function(){
+			$scope.data = "not found data from  database";
+		});
+	}
+
+	$scope.deleteStud=function(studid){
+		$http.post("delete.php",{'id':studid})
+		.success(function(){
+				$scope.msg="Data Deletion successfull";
+				$scope.displayStud();
+		});
+	}
+
+	$scope.editStud=function(studid, studname)
+	{
+		$scope.id=studid;
+		$scope.name=studname;
+		$scope.btnName="Update";
+		$scope.obj.idisable=true;
+		$scope.msg="Data update success";
+		$scope.displayStud();
+	}
+
+});
+
+</script>
+
+
+</body>
+
+</html>
